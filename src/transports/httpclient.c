@@ -10,7 +10,6 @@
 #include "http_parser.h"
 #include "vector.h"
 #include "trace.h"
-#include "global.h"
 #include "httpclient.h"
 #include "http.h"
 #include "auth.h"
@@ -1369,8 +1368,11 @@ int git_http_client_read_response(
 
 	git_http_response_dispose(response);
 
-	git_vector_free_deep(&client->server.auth_challenges);
-	git_vector_free_deep(&client->proxy.auth_challenges);
+	if (client->current_server == PROXY) {
+		git_vector_free_deep(&client->proxy.auth_challenges);
+	} else if(client->current_server == SERVER) {
+		git_vector_free_deep(&client->server.auth_challenges);
+	}
 
 	client->state = READING_RESPONSE;
 	client->keepalive = 0;
